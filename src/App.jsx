@@ -1,90 +1,94 @@
-import * as THREE from 'three'
-import { Canvas } from '@react-three/fiber'
-import { Sparkles, Shadow, ContactShadows, Billboard, Environment, BakeShadows, OrbitControls } from '@react-three/drei'
-import { LayerMaterial, Depth } from 'lamina'
-import Dice from './components/Dice'
-import React, { useState } from 'react';
-
+import React, { useState, useRef } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Environment, OrbitControls } from '@react-three/drei';
+import { Physics } from '@react-three/cannon';
+import * as THREE from 'three';
+import Dice from './components/Dice';
+import soundFile from './assets/sound/videoplayback.mp3';
 
 const App = () => {
   const [diceFace, setDiceFace] = useState(1);
+  const [rollTrigger, setRollTrigger] = useState(false);
+  const soundRef = useRef(null);
 
-  // Hàm để thay đổi mặt xúc xắc ngẫu nhiên từ 1 đến 6
   const rollDice = () => {
     const randomFace = Math.floor(Math.random() * 6) + 1;
     setDiceFace(randomFace);
+    setRollTrigger(true);
+
+    // Phát nhạc khi người dùng nhấn nút
+    if (soundRef.current && !soundRef.current.isPlaying) {
+      soundRef.current.play();
+    }
   };
-  
+
+  const onCanvasCreated = ({ gl }) => {
+    const listener = new THREE.AudioListener();
+
+    // Kiểm tra nếu camera tồn tại trước khi thêm listener
+    if (gl.camera) {
+      gl.camera.add(listener);
+    }
+
+    const sound = new THREE.Audio(listener);
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(soundFile, (buffer) => {
+      sound.setBuffer(buffer);
+      sound.setLoop(true); // Lặp lại nhạc
+      sound.setVolume(0.2); // Đặt âm lượng
+      soundRef.current = sound; // Lưu tham chiếu tới âm thanh
+    });
+  };
+
   return (
-    <>
-    <button
-    onClick={rollDice}
-    style={{
-      position: 'absolute',
-      top: 20,
-      left: 20,
-      padding: '10px 20px',
-      fontSize: '16px',
-      zIndex: 1,
-      cursor: 'pointer',
-      borderRadius: '5px',
-      border: '1px solid #ccc',
-      backgroundColor: '#f5f5f5',
-    }}
-  >
-    Lắc lì xì
-  </button>
-    <Canvas style={{
-      width: '100vw',
-      height: '100vh',
-      padding:0,
-      margin:0,
-    }} camera={{ position: [0, 12, 12], fov: 30 }}>
-      <hemisphereLight intensity={0.5} color="white" groundColor="black" />
-      <Environment
-        files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/blaubeuren_church_square_2k.hdr"
-        ground={{ height: 5, radius: 40, scale: 20 }}
-      />
-      {/* <Sphere color="white" amount={50} emissive="green" glow="lightgreen" position={[1, 1, -1]} />
-      <Sphere color="white" amount={30} emissive="purple" glow="#ff90f0" size={0.5} position={[-1.5, 0.5, -2]} />
-      <Sphere color="lightpink" amount={20} emissive="orange" glow="#ff9f50" size={0.25} position={[-1, 0.25, 1]} /> */}
-      <Dice face={diceFace} /> 
-      <OrbitControls autoRotateSpeed={0.85} zoomSpeed={0.75} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.55} />
-    </Canvas>
-    </>
-  )
+    <div className="w-full h-full bg-red-500 p-0">
+      {/* Nút lắc xúc xắc */}
+      <button
+        onClick={rollDice}
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          padding: '10px 20px',
+          fontSize: '16px',
+          zIndex: 1,
+          cursor: 'pointer',
+          borderRadius: '5px',
+          border: '1px solid #ccc',
+          backgroundColor: '#f5f5f5',
+        }}
+      >
+        Lắc lì xì
+      </button>
 
-}
-
-const Sphere = ({ size = 1, amount = 50, color = 'white', emissive, glow, ...props }) => (
-  <mesh {...props}>
-<sphereGeometry args={[size, 16, 16]} />
-    <meshPhysicalMaterial roughness={0} color={color} emissive={emissive || color} envMapIntensity={0.2} />
-    <Glow scale={size * 1.2} near={-25} color={glow || emissive || color} />
-    <Sparkles count={amount} scale={size * 2} size={6} speed={0.4} />
-    <Shadow rotation={[-Math.PI / 2, 0, 0]} scale={size * 1.5} position={[0, -size, 0]} color="black" opacity={1} />
-  </mesh>
-)
-
-const Glow = ({ color, scale = 0.5, near = -2, far = 1.4 }) => (
-  <Billboard>
-    <mesh>
-      <circleGeometry args={[2 * scale, 16]} />
-      <LayerMaterial
-        transparent
-        depthWrite={false}
-        blending={THREE.CustomBlending}
-        blendEquation={THREE.AddEquation}
-        blendSrc={THREE.SrcAlphaFactor}
-        blendDst={THREE.DstAlphaFactor}>
-        <Depth colorA={color} colorB="black" alpha={1} mode="normal" near={near * scale} far={far * scale} origin={[0, 0, 0]} />
-        <Depth colorA={color} colorB="black" alpha={0.5} mode="add" near={-40 * scale} far={far * 1.2 * scale} origin={[0, 0, 0]} />
-        <Depth colorA={color} colorB="black" alpha={1} mode="add" near={-15 * scale} far={far * 0.7 * scale} origin={[0, 0, 0]} />
-        <Depth colorA={color} colorB="black" alpha={1} mode="add" near={-10 * scale} far={far * 0.68 * scale} origin={[0, 0, 0]} />
-      </LayerMaterial>
-    </mesh>
-  </Billboard>
-)
-
+      {/* Canvas 3D */}
+      <Canvas
+        style={{
+          padding: 0,
+          margin: 0,
+          width: '100vw',
+          height: '100vh',
+        }}
+        shadows
+        camera={{ position: [0, 12, 12], fov: 40 }}
+        onCreated={onCanvasCreated}
+      >
+        <hemisphereLight intensity={0.5} color="white" groundColor="black" />
+        <Environment
+          files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/blaubeuren_church_square_2k.hdr"
+          ground={{ height: 5, radius: 40, scale: 20 }}
+        />
+        <Physics>
+          <Dice
+            face={diceFace}
+            rollTrigger={rollTrigger}
+            onRollComplete={() => setRollTrigger(false)}
+          />
+        </Physics>
+        <OrbitControls autoRotateSpeed={0} zoomSpeed={0.75} />
+      </Canvas>
+    </div>
+  );
+};
 
 export default App;

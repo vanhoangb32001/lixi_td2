@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSpring, a } from '@react-spring/three';
-import { useFrame } from '@react-three/fiber';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -28,22 +27,22 @@ function Dice({ face, rollTrigger, onRollComplete }) {
     6: [Math.PI, 0, 0],
   };
 
-  // Animation logic
   const { position, rotation } = useSpring({
-    position: rollTrigger ? [0, 5, 0] : [0, 0, 0],
+    position: rollTrigger ? [0, 5, 0] : [0, 0.6, 0], // Bay lên cao
     rotation: rollTrigger
-      ? [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]
-      : rotations[face],
-    config: { mass: 1, tension: 120, friction: 14 },
+      ? [Math.random() * Math.PI + 10 * Math.PI, Math.random() * Math.PI + 10 * Math.PI, Math.random() * Math.PI + 10 * Math.PI]
+      : rotations[face], // Dừng lại với góc cố định
+    config: { mass: 2, tension: 250, friction: 20 },
     onRest: () => {
       if (rollTrigger) {
-        onRollComplete();
+        onRollComplete(); // Gọi callback khi dừng
       }
     },
   });
+  
 
   return (
-    <a.mesh position={position} rotation={rotation}>
+    <a.mesh position={position} rotation={rotation} castShadow>
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial map={texture1} attach="material-0" />
       <meshStandardMaterial map={texture2} attach="material-1" />
