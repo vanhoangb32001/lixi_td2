@@ -7,27 +7,25 @@ import * as THREE from "three";
 import tuong from "../assets/test.png";
 
 /* --- Tường với texture --- */
-const WallBoxWithTexture = ({ position, size }) => {
+const WallBoxWithTexture = memo(({ position, size }) => {
   const [ref] = useBox(() => ({
     type: "Static",
-    args: size, // Kích thước vật lý: [width, height, depth]
+    args: size,
     position,
   }));
 
-  // Load texture bằng useLoader
   const texture = useLoader(THREE.TextureLoader, tuong);
 
   return (
     <mesh ref={ref}>
       <boxGeometry args={size} />
-      {/* Áp dụng texture cho vật liệu */}
-      <meshStandardMaterial map={texture} />
+      <meshStandardMaterial transparent opacity={1} map={texture} />
     </mesh>
   );
-};
+});
 
-/* --- Tường không có texture (màu cam) --- */
-const WallBoxNoTexture = ({ position, size, color = "orange" }) => {
+
+const WallBoxNoTexture = memo(({ position, size }) => {
   const [ref] = useBox(() => ({
     type: "Static",
     args: size,
@@ -37,26 +35,26 @@ const WallBoxNoTexture = ({ position, size, color = "orange" }) => {
   return (
     <mesh ref={ref}>
       <boxGeometry args={size} />
-      <meshStandardMaterial color={color} transparent opacity={0.5} />
+      <meshStandardMaterial transparent opacity={0} />
     </mesh>
   );
-};
+});
+
 
 /* --- WallsBox: 4 tường với 1 tường có ảnh --- */
 function WallsBoxImpl() {
   return (
     <>
-      {/* Tường có ảnh (texture) */}
-
-
-      {/* Các tường khác chỉ dùng màu */}
-      <WallBoxNoTexture position={[0, 5, 10]} size={[20, 10, 1]} />
+      {/* Tường với ảnh texture */}
       <WallBoxWithTexture position={[0, 5, -10]} size={[20, 10, 1]} />
+
+      {/* Các tường khác chỉ có màu sắc */}
+      <WallBoxNoTexture position={[0, 5, 10]} size={[20, 10, 1]} />
       <WallBoxNoTexture position={[-10, 5, 0]} size={[1, 10, 20]} />
       <WallBoxNoTexture position={[10, 5, 0]} size={[1, 10, 20]} />
     </>
   );
 }
 
-/* --- Memo hóa WallsBox để tránh re-render không cần thiết --- */
 export default memo(WallsBoxImpl);
+

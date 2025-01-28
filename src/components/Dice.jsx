@@ -64,12 +64,12 @@ function DiceImpl({ onRollComplete }, ref) {
       // Đặt xúc xắc lên cao
       api.position.set(0, 10, 0);
       // random velocity
-      api.velocity.set((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 10);
+      api.velocity.set((Math.random() - 0.5) * 50, 0, (Math.random() - 0.5) * 40);
       // random angularVelocity
       api.angularVelocity.set(
-        (Math.random() - 0.5) * 100,
         (Math.random() - 0.5) * 50,
-        (Math.random() - 0.5) * 200
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 50
       );
     },
   }));

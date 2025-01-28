@@ -22,6 +22,8 @@ export default function App() {
   const [resultFace, setResultFace] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [isLight, setIsLight] = useState(false);
+  const [isAltar, setIsAltar] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(null);
   const [data, setData] = useState([]); // Mảng dữ liệu cho vòng xoay
@@ -68,6 +70,12 @@ export default function App() {
   // Hàm mở modal
   const handleOpenModal = () => {
     setIsModalOpen(true);
+  };
+  const handleOpenAltar = () => {
+    setIsAltar(!isAltar);
+  };
+  const handleOpenLight = () => {
+    setIsLight(!isLight);
   };
 
   // Hàm đóng modal
@@ -121,6 +129,8 @@ export default function App() {
       <div className="absolute z-50 top-5 left-5 flex gap-4">
         <CustomButton onClick={handleRoll}>Lắc Xúc Xắc</CustomButton>
         <CustomButton onClick={handleOpenModal}>Mở Vòng Xoay</CustomButton>
+        <CustomButton onClick={handleOpenAltar}>Đồ chơi</CustomButton>
+        <CustomButton onClick={handleOpenLight}>Mở đèn</CustomButton>
       </div>
 
       {/* Modal chứa vòng xoay */}
@@ -278,12 +288,28 @@ export default function App() {
       >
         {/* <Suspense fallback={<Loader />}> */}
         <ambientLight intensity={0.8} />
+        {/* Ánh sáng điểm để làm nổi bật */}
+        {isLight && (
+          <>
+            <directionalLight
+              position={[5, 10, 5]} // Vị trí ánh sáng
+              intensity={1} // Cường độ ánh sáng
+              color="#ffffff" // Màu sắc ánh sáng
+              castShadow // Cho phép tạo bóng
+            />
+          </>
+        )}
 
         <Physics>
           <Floor />
           <WallsBox />
           {/* Thêm bàn thờ */}
-          {/* <Altar position={[0, 0, -8]} scale={1.5} /> */}
+          {isAltar && (
+            <>
+              {/* Thêm bàn thờ */}
+              <Altar position={[0, 0, -8]} scale={1.5} />
+            </>
+          )}
           <Dice ref={diceRef} onRollComplete={setResultFace} />
         </Physics>
 
